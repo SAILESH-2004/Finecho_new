@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with GPT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1d1f21, #3d3f43);
+            color: white;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            width: 90%;
+            max-width: 1200px;
+            height: 85vh;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .chat-history {
+            width: 30%;
+            background-color: #2a2d31;
+            border-right: 2px solid #444;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .chat-history h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #58a6ff;
+        }
+
+        .history-message {
+            background-color: #3a3f45;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .history-message.user {
+            background-color: #0078d7;
+            color: white;
+        }
+
+        .history-message.gpt {
+            background-color: #16a34a;
+            color: white;
+        }
+
+        .chat-container {
+            width: 70%;
+            background-color: #212224;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .chat-box {
+            background-color: #292b2e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            font-size: 16px;
+            resize: none;
+            outline: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #0078d7;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            text-align: right;
+        }
+
+        .gpt-message {
+            align-self: flex-start;
+            background-color: #16a34a;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 70%;
+            text-align: left;
+        }
+
+        .send-button {
+            padding: 12px 24px;
+            background-color: #0078d7;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .send-button:hover {
+            transform: scale(1.05);
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .logo img {
+            max-width: 80px;
+            height: auto;
+            transition: transform 0.5s ease;
+        }
+
+        .logo img:hover {
+            transform: scale(1.1);
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: #bbb;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .chat-history {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .chat-container {
+                width: 100%;
+            }
+        }
+
+        .formatted-point {
+            margin-bottom: 10px;
+        }
+
+        .formatted-point strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .edit-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+            color: #ff9900;
+            transition: color 0.2s;
+        }
+
+        .edit-icon:hover {
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">
+        <img src="/static/logo.png" alt="Logo" id="logo">
+    </div>
+
+    <div class="container">
+        <div class="chat-history">
+            <h3>Chat History</h3>
+            <div id="chatHistory"></div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat"></div>
+
+            <textarea id="userInput" class="chat-box" placeholder="Type your message and press Enter..." rows="4"></textarea>
+            <button class="send-button" onclick="sendInput()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const messageHistory = [];
+
+        let editingMessage = null;  // Variable to store the message being edited
+
+        document.getElementById("userInput").addEventListener("keydown", function(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendInput();
+            }
+        });
+
+        function sendInput() {
+            const userInput = document.getElementById('userInput').value;
+
+            if (userInput.trim() === "") {
+                document.getElementById('userInput').style.border = "2px solid red";
+                setTimeout(() => {
+                    document.getElementById('userInput').style.border = "";
+                }, 2000);
+                return; // Don't submit if the input is empty
+            }
+
+            if (editingMessage) {
+                // If we are editing, replace the old message with the new one
+                editingMessage.querySelector('.message').innerHTML = userInput; // Update message text
+                editingMessage.querySelector('.timestamp').textContent = getTimestamp(); // Update timestamp
+
+                // Update the messageHistory with the edited message
+                const index = messageHistory.findIndex(msg => msg.timestamp === editingMessage.querySelector('.timestamp').textContent);
+                messageHistory[index].text = userInput;
+                editingMessage = null; // Reset the editing state
+            } else {
+                // If it's a new message, add it to the chat
+                addMessage(userInput, 'user');
+                messageHistory.push({ text: userInput, sender: 'user', timestamp: getTimestamp() });
+            }
+
+            document.getElementById('userInput').value = ""; // Clear the input field
+
+            // Call the backend server to generate a response for the message
+            fetch('/process_input', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ input: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.output) {
+                    addMessage(formatResponse(data.output), 'gpt');
+                    messageHistory.push({ text: data.output, sender: 'gpt', timestamp: getTimestamp() });
+                } else if (data.error) {
+                    addMessage('Error: ' + data.error, 'gpt');
+                }
+            })
+            .catch(error => {
+                addMessage('Error: ' + error.message, 'gpt');
+            });
+
+            updateChatHistory(); // Update the chat history
+        }
+
+        function addMessage(message, sender) {
+            const chatDiv = document.getElementById('chat');
+            
+            // Create a div for the message
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender === 'user' ? 'user-message' : 'gpt-message');
+            messageDiv.innerHTML = message;
+
+            // Create an edit icon for user messages
+            if (sender === 'user') {
+                const editIcon = document.createElement('span');
+                editIcon.classList.add('edit-icon');
+                editIcon.textContent = '✏️'; // The edit icon
+                editIcon.style.cursor = 'pointer'; // Make the icon clickable
+                editIcon.addEventListener('click', () => {
+                    enableEditMode(message, messageDiv);
+                });
+                messageDiv.prepend(editIcon); // Place the icon before the message text
+            }
+
+            // Add timestamp to the message
+            const timestamp = document.createElement('div');
+            timestamp.classList.add('timestamp');
+            timestamp.textContent = getTimestamp(); // Get current timestamp
+
+            messageDiv.appendChild(timestamp);
+            chatDiv.appendChild(messageDiv); // Append the message to the chat area
+            chatDiv.scrollTop = chatDiv.scrollHeight; // Auto-scroll to the bottom
+        }
+
+        function updateChatHistory() {
+            const chatHistoryDiv = document.getElementById('chatHistory');
+            chatHistoryDiv.innerHTML = '';
+
+            messageHistory.forEach(message => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('history-message', message.sender);
+                messageDiv.innerHTML = `${message.text} <span class="timestamp">${message.timestamp}</span>`;
+                chatHistoryDiv.appendChild(messageDiv);
+            });
+        }
+
+        function getTimestamp() {
+            return new Date().toLocaleTimeString();
+        }
+
+        function formatResponse(response) {
+            const points = response.split('\n').map(point => point.trim()).filter(point => point);
+            return points.map(point => {
+                const [title, ...details] = point.split(':');
+                return `<div class="formatted-point"><strong>${title.trim()}</strong><span>${details.join(':').trim()}</span></div>`;
+            }).join('');
+        }
+
+        function enableEditMode(message, messageDiv) {
+            // Set the message text in the input box for editing
+            document.getElementById('userInput').value = message;
+
+            // Store the message div that is being edited
+            editingMessage = messageDiv;
+
+            // Focus on the input box for the user to start editing
+            document.getElementById('userInput').focus();
+        }
+    </script>
+
+</body>
+</html>

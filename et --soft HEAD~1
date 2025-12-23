@@ -1,0 +1,44 @@
+[33mb786682[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Remove API keys and use environment variables
+[33m7ae5439[m Resolve merge conflict for LICENSE and README
+[33m3981259[m Finalized the prototype
+[33mabf1727[m[33m ([m[1;31morigin/main[m[33m)[m Initial commit
+[33mfa9fd2e[m Update README.md
+[33m769af80[m Update README.md
+[33m0ba5664[m Update README.md
+[33m23e21c3[m Update README.md
+[33m266c57d[m Update README.md
+[33m013e412[m Update README.md
+[33m5845a8a[m Update README.md
+[33mc226381[m Update README.md
+[33m2fee768[m Update README.md
+[33mfe4d6cd[m Update README.md
+[33m728546f[m Update README.md
+[33mcb2d41c[m Update README.md
+[33m4ee5199[m Update README.md
+[33m9fb2d6d[m Update README.md
+[33m08e82b0[m Update README.md
+[33m60a21ab[m Update README.md
+[33m93e0349[m Update README.md
+[33mcc8d701[m Update README.md
+[33m371af36[m Update README.md
+[33m5bb0ba5[m Update README.md
+[33m349eb6b[m Update README.md
+[33m8859548[m Update README.md
+[33ma47d94e[m Update README.md
+[33m2eaeb63[m Update README.md
+[33mc2db27d[m Update README.md
+[33mc86ccef[m Update README.md
+[33me9b07fe[m Update README.md
+[33mc374e67[m Gpt model optimzation
+[33ma4dbc2f[m new viusl added
+[33macc564a[m LLM model data is processed
+[33m433f358[m Data visulization is ok need to optimize
+[33m43003d7[m visulization are ok with cat and num value
+[33m82e0180[m visulization needs to be more optimized
+[33m4eba857[m GPT page added and all links works perfect
+[33m2c2b92f[m Data and link pages are updated
+[33m93ffdd3[m local and cloud data methods added successfully
+[33me8ef166[m Cloud data method added
+[33m9c23997[m local data pipeline added
+[33mc03c4da[m No error in code
+[33m454365d[m Initial commit
